@@ -1,4 +1,4 @@
-network_visualiation.R
+network_visualisation.R
 docs/
 data/*.gz
 data/*.gtf
