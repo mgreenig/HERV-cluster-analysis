@@ -55,7 +55,7 @@ non_zero_human_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_human
 non_zero_human_counts_scaled <- t(scale(t(non_zero_human_counts_reg)))
 
 # build DESeq model for retro genes
-dds_retro <- DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection+Batch)
+dds_retro <- DESeq2::DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection+Batch)
 
 # filter for highly-expressed genes
 dds_retro <- DESeq2::estimateSizeFactors(dds_retro)
@@ -67,7 +67,7 @@ non_zero_retro_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_retro
 # scale to unit variance per-gene using transpose
 non_zero_retro_counts_scaled <- t(scale(t(non_zero_retro_counts_reg)))
 
-# function for removing batch effects using a linear model
+# function for removing batch effects using OLS fits with a batch variable
 remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', batch_col = 'Batch'){
   
   # make data matrices for all genes
@@ -84,7 +84,7 @@ remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', bat
   batch_levels <- sort(unique(coldata[,batch_col]))
   batch_vector <- coldata[,batch_col]
   
-  # get the batch coefficient vector 
+  # get the batch effects in a matrix
   batch_effects <- lapply(linear_models, function(model){
     coefs <- model$coefficients[paste(batch_col, batch_levels[2:length(batch_levels)], sep='')] 
     coefs <- c(0, coefs)

@@ -1,4 +1,4 @@
-library(data.table)
+library(reshape2)
 
 source('full_clustering.R')
 
@@ -75,7 +75,7 @@ plot_trajectory <- function(mean_expr_df, cluster_number, retro_gene_list, condi
     factor(levels = c('Human', 'Retroelement'))
 
   # compress data frame into two columns, one for infection group and the other for expression
-  plot_df <- data.table::melt(mean_expr_df, id.vars = 'gene_type', variable.name = conditon_var, value.name = 'expression')
+  plot_df <- reshape2::melt(mean_expr_df, id.vars = 'gene_type', variable.name = conditon_var, value.name = 'expression')
   plot_df$HERV_expr[plot_df$gene_type == 'Retroelement'] <- plot_df$expression[plot_df$gene_type == 'Retroelement']
   
   # make plot
