@@ -21,10 +21,12 @@ all_sig_genes_clusters <- dynamicTreeCut::cutreeDynamicTree(all_sig_genes_dendro
 # add cluster to the dataframe
 all_sig_genes_infection$cluster <- all_sig_genes_clusters + 1
 all_sig_genes_infection_expr$cluster <- all_sig_genes_clusters + 1
+all_sig_genes_infection_expr$gene_type <- ifelse(rownames(all_sig_genes_infection_expr) %in% rownames(sig_retro_genes_infection_expr),
+                                                 'Retroelement', 'Human')
 
 # get size of each cluster
 cluster_sizes <- all_sig_genes_infection_expr %>% 
-  dplyr::group_by(cluster) %>% 
+  dplyr::group_by(cluster, gene_type) %>% 
   dplyr::summarise(n = n()) 
 cluster_sizes$cluster <- factor(cluster_sizes$cluster, levels = 1:length(unique(all_sig_genes_clusters)))
 
@@ -77,8 +79,8 @@ eigengene_dists <- factoextra::get_dist(cluster_eigengenes, method = 'pearson')
 eigengene_clustering <- hclust(eigengene_dists, method = 'average')
 
 if(!interactive()){
-  png('figures/dendrogram_gene_clusters.png', width = 1280, height = 720, units = 'px')
-  plot(eigengene_clustering)
+  png('figures/dendrogram_gene_clusters.png', width = 720, height = 720, units = 'px')
+  plot(eigengene_clustering, ylab = '', xlab = '', sub = '', main = 'Cluster eigengenes')
   dev.off()
 }
 
@@ -106,6 +108,9 @@ get_hub_genes <- function(expr, distance_matrix, cluster_number, n = 1){
     distance_matrix <- as.matrix(distance_matrix)
   }
   
+  # convert from pearson distance to absolute correlation
+  distance_matrix <- abs(1 - distance_matrix)
+  
   # get genes in the cluster
   cluster_genes <- rownames(expr[expr$cluster == cluster_number,])
   
@@ -114,7 +119,7 @@ get_hub_genes <- function(expr, distance_matrix, cluster_number, n = 1){
   
   # iterate over rows and calculate the mean value for each gene
   avg_dists <- apply(cluster_dists, 1, mean)
-  avg_dists_sorted <- sort(avg_dists)
+  avg_dists_sorted <- sort(avg_dists, decreasing = TRUE)
 
   # get top n genes
   top_n_genes <- names(avg_dists_sorted)[1:n]
@@ -128,12 +133,52 @@ cluster_hub_genes <- lapply(unique(all_sig_genes_infection_expr$cluster), get_hu
                             expr = all_sig_genes_infection_expr, distance_matrix = all_sig_genes_dist, n = 1)
 names(cluster_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
 
+cluster_hub_genes_all <- lapply(unique(all_sig_genes_infection_expr$cluster), function(clus, expr, distance_matrix, n){
+  get_hub_genes(cluster_number = clus, expr = expr, distance_matrix = distance_matrix, n = nrow(expr[expr$cluster == clus,]))
+}, expr = all_sig_genes_infection_expr, distance_matrix = all_sig_genes_dist)
+names(cluster_hub_genes_all) <- unique(all_sig_genes_infection_expr$cluster)
+
+# get retroelement hub genes
+retro_hub_genes <- lapply(cluster_hub_genes_all, function(genes, n) genes[genes %in% rownames(sig_retro_genes_infection)][1:n], n = 1)
+names(retro_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
+
+# plot module membership statistics for retro/human hub genes in 4 clusters
+clusters_to_plot <- c('3', '5', '7', '8')
+
+# get module membership statistics for each cluster to plot
+module_membership_df <- lapply(clusters_to_plot, function(clus){
+  eigengene <- cluster_eigengenes[clus,] %>% unlist
+  human_hub_gene_expr <- all_sig_genes_infection_expr[cluster_hub_genes[[clus]],] %>% select(-cluster, -gene_type) %>% unlist
+  retro_hub_gene_expr <- all_sig_genes_infection_expr[retro_hub_genes[[clus]],]  %>% select(-cluster, -gene_type) %>% unlist
+  df <- data.frame(cluster = clus,
+                   corr = c(abs(cor(eigengene, human_hub_gene_expr)),
+                            abs(cor(eigengene, retro_hub_gene_expr))),
+                   type = c('Human', 'Retro'),
+                   gene = c(cluster_hub_genes[[clus]],
+                            retro_hub_genes[[clus]]))
+  return(df)
+  }) %>%
+  do.call(rbind, .)
+module_membership_df$gene <- gsub('\\..*$', '', module_membership_df$gene)
+
+# plot module memberships
+module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr, fill = type, label = gene)) + 
+  geom_col(position = position_dodge(0.6), width = 0.5, colour = 'black') +
+  labs(x = '\nCluster', y = 'Module membership statistic\n', fill = 'Hub gene',
+       title = 'Module memberships of human and retroelement hub genes\n') +
+  geom_label(position = position_dodge(0.75), vjust = -0.25, size = 4, show.legend = FALSE) + 
+  theme_minimal() + theme(plot.title = element_text(size = 20, face = 'bold', hjust = 0.5),
+                          text = element_text(size = 18)) + ylim(c(0,1.05)) +
+  scale_fill_manual(values = c('#00BFC4', '#F8766D'), labels = c('Human', 'Retroelement'))
+
+ggsave('figures/module_membership_plot.png', module_membership_plot, width = 12, height = 6, units = 'in')
+
 # get expression vectors for cluster hub genes
 cluster_hub_gene_expr <- lapply(names(cluster_hub_genes), function(cluster){
   
   # get counts for genes in the cluster
   in_cluster <- all_sig_genes_infection_expr[all_sig_genes_infection_expr$cluster == cluster,]
-  cluster_counts <- scale(in_cluster[,colnames(in_cluster) != 'cluster'])
+  cluster_counts <- in_cluster %>% select(-cluster, -gene_type) %>% scale
   
   # get the count vector for the hub gene
   gene_name <- cluster_hub_genes[[cluster]]
@@ -158,7 +203,7 @@ ordered_rows <- rownames(cluster_eigengenes) %>%
 # get adjacency between hub and eigengenes (correlation squared)
 hub_and_eigengene_dists <- cor(t(cluster_eigengenes[ordered_rows,]), 
                                t(cluster_hub_gene_expr[ordered_rows,]), 
-                               method = 'pearson') ^ 2
+                               method = 'pearson') %>% abs
 # order dataframe
 hub_and_eigengene_dists_ordered <- t(hub_and_eigengene_dists)
 

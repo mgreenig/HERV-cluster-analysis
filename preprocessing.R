@@ -2,6 +2,7 @@ library(org.Hs.eg.db)
 library(dplyr)
 library(DESeq2)
 library(ggplot2)
+library(dendextend)
 
 # import human count data
 human_counts <- read.table('data/Gene_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
@@ -94,7 +95,7 @@ remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', bat
   }) %>%
     do.call(rbind, .)
   
-  # subtract the batch effect from the raw expressiont values
+  # subtract the batch effect from the raw expression values
   batch_adjusted_expr <- expr - batch_effects
   
   return(batch_adjusted_expr)
@@ -138,9 +139,13 @@ plot_dendrogram <- function(expr, title){
 
   # cluster using average linkage
   samples_clustering <- hclust(samples_dist, method = 'average')
+  dend <- as.dendrogram(samples_clustering)
   
   # return plot
-  plot(samples_clustering, main = title)
+  dend_labels <- labels(dend)
+  labels(dend) <- ""
+  plot(dend)
+  text(x = 1:length(dend_labels), labels = dend_labels, srt = 45, adj = c(1,1), xpd = T)
 
 }
 
