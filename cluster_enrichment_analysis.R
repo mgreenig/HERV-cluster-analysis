@@ -26,9 +26,9 @@ get_enriched_terms <- function(gene_symbols, terms = c('GO', 'KEGG')){
   entrez_ids <- entrez_ids[!is.na(entrez_ids)]
   
   if(terms == 'GO'){
-    enriched <- enrichGO(entrez_ids, 'org.Hs.eg.db', ont = 'BP')
+    enriched <- enrichGO(entrez_ids, 'org.Hs.eg.db', ont = 'BP', qvalueCutoff = 0.1)
   }else{
-    enriched <- enrichKEGG(entrez_ids, organism = 'hsa')
+    enriched <- enrichKEGG(entrez_ids, organism = 'hsa', qvalueCutoff = 0.1)
   }
   
   return(enriched)
@@ -98,7 +98,7 @@ enriched_KEGG_annotations <- lapply(enriched_KEGG_annotations, function(ann) {
 })
 
 # function for parsing enrichment results, looking up genes in the DE results
-parse_GO <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
+parse_ann <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
   
   if(nrow(ann) == 0){
     return(NA)
@@ -130,17 +130,13 @@ parse_GO <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
   
 }
 
-
-# plot heatmaps
-clusters_to_plot <- c('3', '5', '7', '8')
-
 # get top n GO annotations for each cluster
 n <- 5 
 top_GO_annotations <- lapply(clusters_to_plot, function(cluster){
   cluster_annotations_GO <- enriched_GO_annotations[[cluster]]@result
   top_n_annotations <- cluster_annotations_GO[order(cluster_annotations_GO$p.adjust)[1:n],]
   top_n_annotations$cluster <- cluster
-  top_n_annotations$logp <- -log10(top_n_annotations$p.adjust)
+  top_n_annotations$logp <- -log10(top_n_annotations$pvalue)
   return(top_n_annotations)
 }) %>% 
   do.call(rbind, .)
@@ -155,7 +151,7 @@ for(term in unique(rownames(GO_enrichment_matrix))){
     ann <- enriched_GO_annotations[[cluster]]@result
     if(term %in% ann$term){
       if(ann[ann$term == term,'p.adjust'] < 0.05){
-        logp <- -log10(ann[ann$term == term,'p.adjust'])
+        logp <- -log10(ann[ann$term == term,'pvalue'])
         return(logp)
       } else {
         return(0)
@@ -172,7 +168,7 @@ for(term in unique(rownames(GO_enrichment_matrix))){
 enriched_GO_heatmap <- pheatmap::pheatmap(GO_enrichment_matrix, cluster_rows = FALSE, 
                                           color = colorRampPalette(brewer.pal(n = 7, name = "Blues"))(100),
                                           cluster_cols = FALSE, angle_col = 0, 
-                                          filename = 'figures/enriched_GO_terms.png', 
+                                          filename = paste('figures/enriched_GO_terms_', cell_line, '.png', sep = ''), 
                                           width = 8, height = 5, cellwidth = 25, cellheight = 15)
 
 # get top n GO annotations for each cluster
@@ -197,7 +193,7 @@ for(term in unique(rownames(KEGG_enrichment_matrix))){
     ann <- enriched_KEGG_annotations[[cluster]]@result
     if(term %in% ann$term){
       if(ann[ann$term == term,'p.adjust'] < 0.05){
-        logp <- -log10(ann[ann$term == term,'p.adjust'])
+        logp <- -log10(ann[ann$term == term,'pvalue'])
         return(logp)
       } else {
         return(0)
@@ -214,5 +210,5 @@ for(term in unique(rownames(KEGG_enrichment_matrix))){
 enriched_KEGG_heatmap <- pheatmap::pheatmap(KEGG_enrichment_matrix, cluster_rows = FALSE, 
                                             color = colorRampPalette(brewer.pal(n = 7, name = "Oranges"))(100),
                                             cluster_cols = FALSE, angle_col = 0, 
-                                            filename = 'figures/enriched_KEGG_pathways.png', 
-                                            width = 6, height = 5, cellwidth = 25, cellheight = 15)
+                                            filename = paste('figures/enriched_KEGG_terms_', cell_line, '.png', sep = ''), 
+                                            width = 7, height = 5, cellwidth = 25, cellheight = 15)

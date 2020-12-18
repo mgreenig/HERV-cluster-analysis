@@ -2,10 +2,12 @@ library(dynamicTreeCut)
 library(factoextra)
 library(pheatmap)
 
-source('DE_testing.R')
+cell_line <- 'Calu3'
+
+source(paste('DE_testing_', cell_line, '.R', sep = ''))
 
 # set ggplot theme for increased text size
-text_theme <- theme(plot.title = element_text(size = 18, hjust = 0.5), text = element_text(size = 14))
+text_theme <- theme(plot.title = element_text(size = 18, hjust = 0.5), text = element_text(size = 14), plot.subtitle = element_text(size = 16, hjust = 0.5))
 
 # combine significant HERVs with significant human genes
 all_sig_genes_infection_expr <- rbind(sig_human_genes_infection_expr, sig_retro_genes_infection_expr) %>%
@@ -16,7 +18,8 @@ all_sig_genes_dist <- factoextra::get_dist(all_sig_genes_infection_expr, method 
 
 # cluster and use dynamic tree cut
 all_sig_genes_dendro <- hclust(all_sig_genes_dist, method = 'average')
-all_sig_genes_clusters <- dynamicTreeCut::cutreeDynamicTree(all_sig_genes_dendro, maxTreeHeight = 1.95, deepSplit = TRUE, minModuleSize = 200)
+all_sig_genes_clusters <- dynamicTreeCut::cutreeDynamicTree(all_sig_genes_dendro, maxTreeHeight = 1.95, 
+                                                            deepSplit = TRUE, minModuleSize = ifelse(cell_line == 'A549', 200, 300))
 
 # add cluster to the dataframe
 all_sig_genes_infection$cluster <- all_sig_genes_clusters + 1
@@ -56,7 +59,7 @@ get_eigengene <- function(expr, cluster_number){
   
   # get genes in the cluster
   in_cluster <- expr[expr$cluster == cluster_number,]
-  cluster_gene_expr <- in_cluster[,colnames(in_cluster) != 'cluster']
+  cluster_gene_expr <- in_cluster[,colnames(in_cluster) != 'cluster'] %>% select_if(is.numeric)
   
   # run PCA on cluster genes
   PCA_res <- prcomp(cluster_gene_expr, scale. = FALSE, center = FALSE)
@@ -79,7 +82,7 @@ eigengene_dists <- factoextra::get_dist(cluster_eigengenes, method = 'pearson')
 eigengene_clustering <- hclust(eigengene_dists, method = 'average')
 
 if(!interactive()){
-  png('figures/dendrogram_gene_clusters.png', width = 720, height = 720, units = 'px')
+  png(paste('figures/dendrogram_gene_clusters_', cell_line, '.png', sep = ''), width = 720, height = 720, units = 'px')
   plot(eigengene_clustering, ylab = '', xlab = '', sub = '', main = 'Cluster eigengenes')
   dev.off()
 }
@@ -143,7 +146,7 @@ retro_hub_genes <- lapply(cluster_hub_genes_all, function(genes, n) genes[genes 
 names(retro_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
 
 # plot module membership statistics for retro/human hub genes in 4 clusters
-clusters_to_plot <- c('3', '5', '7', '8')
+clusters_to_plot <- c('5', '9', '11', '14')
 
 # get module membership statistics for each cluster to plot
 module_membership_df <- lapply(clusters_to_plot, function(clus){
@@ -171,45 +174,5 @@ module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr
                           text = element_text(size = 18)) + ylim(c(0,1.05)) +
   scale_fill_manual(values = c('#00BFC4', '#F8766D'), labels = c('Human', 'Retroelement'))
 
-ggsave('figures/module_membership_plot.png', module_membership_plot, width = 12, height = 6, units = 'in')
-
-# get expression vectors for cluster hub genes
-cluster_hub_gene_expr <- lapply(names(cluster_hub_genes), function(cluster){
-  
-  # get counts for genes in the cluster
-  in_cluster <- all_sig_genes_infection_expr[all_sig_genes_infection_expr$cluster == cluster,]
-  cluster_counts <- in_cluster %>% select(-cluster, -gene_type) %>% scale
-  
-  # get the count vector for the hub gene
-  gene_name <- cluster_hub_genes[[cluster]]
-  gene_vector <- cluster_counts[gene_name,]
-    
-  return(gene_vector)
-  
-}) %>% 
-  do.call(rbind, .) %>%
-  as.data.frame
-rownames(cluster_hub_gene_expr) <- cluster_hub_genes
-
-# cluster hub genes
-hub_gene_dists <- factoextra::get_dist(cluster_hub_gene_expr, method = 'pearson')
-hub_gene_clustering <- hclust(hub_gene_dists, method = 'average')
-
-# order eigengene clusters 1 to k
-ordered_rows <- rownames(cluster_eigengenes) %>% 
-  as.numeric %>% 
-  order
-
-# get adjacency between hub and eigengenes (correlation squared)
-hub_and_eigengene_dists <- cor(t(cluster_eigengenes[ordered_rows,]), 
-                               t(cluster_hub_gene_expr[ordered_rows,]), 
-                               method = 'pearson') %>% abs
-# order dataframe
-hub_and_eigengene_dists_ordered <- t(hub_and_eigengene_dists)
-
-# make heatmap of hub gene/eigengene correlations
-hub_and_eigengene_heatmap <- pheatmap::pheatmap(hub_and_eigengene_dists_ordered, cluster_rows = FALSE, 
-                                                cluster_cols = FALSE, angle_col = 0, 
-                                                main = 'Eigengene and hub gene correlations across modules',
-                                                filename = 'figures/eigengene_hubgene_comparison.png', 
-                                                width = 8, height = 5)
+ggsave(paste('figures/module_membership_plot_', cell_line, '.png', sep = ''),
+       module_membership_plot, width = 12, height = 6, units = 'in')

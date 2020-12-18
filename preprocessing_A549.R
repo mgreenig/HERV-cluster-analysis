@@ -4,38 +4,23 @@ library(DESeq2)
 library(ggplot2)
 library(dendextend)
 
-SARSCov2_Calu3_human <- read.table('data/Gene_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-MERS_SARS_Calu3_human <- read.table('data/Gene_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_human <- read.table('data/Gene_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
-
-SARSCov2_Calu3_retro <- read.table('data/Retro_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-MERS_SARS_Calu3_retro <- read.table('data/Retro_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_retro <- read.table('data/Retro_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
-
-SARSCov2_Calu3_metadata <- read.table('data/Samples_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-MERS_SARS_Calu3_metadata <- read.table('data/Samples_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_metadata <- read.table('data/Samples_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
-
 # import human count data
-human_counts <- cbind(SARSCov2_Calu3_human, MERS_SARS_Calu3_human)
+human_counts <- read.table('data/Gene_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
 
 # import retroelement count data
-shared_retroelements <- rownames(SARSCov2_Calu3_retro)[rownames(SARSCov2_Calu3_retro) %in% rownames(MERS_SARS_Calu3_retro)]
-retro_counts <- cbind(SARSCov2_Calu3_retro[shared_retroelements,], 
-                      MERS_SARS_Calu3_retro[shared_retroelements,])
+retro_counts <- read.table('data/Retro_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
 
 # remove retro genes with zero counts
 all_zero_retro_mask <- apply(retro_counts, 1, function(row){all(row == 0)})
 non_zero_retro_counts <- retro_counts[!all_zero_retro_mask,]
 
-# get metadata
-SARSCov2_Calu3_metadata$Batch <- 0
-MERS_SARS_Calu3_metadata$Batch <- 1
-metadata <- rbind(SARSCov2_Calu3_metadata[,c('Batch', 'Infection')], MERS_SARS_Calu3_metadata[,c('Batch', 'Infection')])
+# import metadata
+metadata <- read.table('data/Samples_COV2hm_IAV_A549.txt', sep = '\t', header = TRUE)
 metadata$Infection <- as.character(metadata$Infection)
 metadata$Infection[grep('MOCK', metadata$Infection)] <- 'MOCK'
-metadata$Infection <- factor(metadata$Infection)
-metadata$Batch <- as.factor(metadata$Batch)
+metadata$Infection <- factor(metadata$Infection, levels = c('MOCK', 'IAV', 'SARS_Cov2'))
+metadata$Batch <- c(rep('0', 4), rep('1', 6)) %>% as.factor
+metadata$Group <- NULL
 
 # import gene ID database
 human_IDs <- org.Hs.eg.db
@@ -92,7 +77,7 @@ remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', bat
   
   # make linear model formulas with column names
   model_formula <- as.formula(paste('exp ~', condition_col, '+', batch_col))
-    
+  
   # generate linear models
   linear_models <- lapply(Xs, lm, formula = model_formula)
   
@@ -151,7 +136,7 @@ plot_dendrogram <- function(expr, title){
   samples_dist <- expr %>% 
     t %>%
     dist
-
+  
   # cluster using average linkage
   samples_clustering <- hclust(samples_dist, method = 'average')
   dend <- as.dendrogram(samples_clustering)
@@ -161,7 +146,7 @@ plot_dendrogram <- function(expr, title){
   labels(dend) <- ""
   plot(dend)
   text(x = 1:length(dend_labels), labels = dend_labels, srt = 45, adj = c(1,1), xpd = T)
-
+  
 }
 
 # if run from the command line, make plots
@@ -181,5 +166,5 @@ if(!interactive()){
   png('figures/sample_dendrogram_retro_genes.png', width = 1280, height = 720, units = 'px')
   plot_dendrogram(non_zero_retro_counts_reg, title = 'Cluster dendrogram - based on retro genes')
   dev.off()
-
+  
 }

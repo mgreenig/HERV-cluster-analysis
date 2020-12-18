@@ -82,8 +82,10 @@ plot_trajectory <- function(mean_expr_df, cluster_number, retro_gene_list, condi
     geom_boxplot(aes(fill = gene_type), alpha = 0.75, outlier.shape = NA, coef = 0, show.legend = FALSE) +
     labs(y = 'Scaled expression\n', x = paste('\n', conditon_var, sep = ''), 
          title = paste('Cluster', cluster_number, '|', nrow(mean_expr_df), 'genes'),
+         subtitle = paste('Hub gene (human):', cluster_hub_genes[[as.character(cluster_number)]], 
+                          '\nHub gene (retro):', retro_hub_genes[[as.character(cluster_number)]]),
          colour = 'Gene type') + 
-    theme_minimal() + text_theme + 
+    theme_minimal() + text_theme + theme(plot.title = element_text(face = 'bold')) + 
     scale_color_manual(values = c('#00BFC4', '#F8766D')) + 
     scale_fill_manual(values = c('#00BFC4', '#F8766D'))
   
@@ -110,20 +112,22 @@ plots <- lapply(unique(all_sig_genes_infection_expr$cluster), function(cluster){
 names(plots) <- unique(all_sig_genes_infection_expr$cluster)
 
 if(!interactive()){
+  fig_dir <- paste(cell_line, '_clusters/', sep = '')
+  dir.create(fig_dir, showWarnings = FALSE)
   for(plot in names(plots)){
-    filepath <- paste('figures/cluster_', plot, '_trajectory.png', sep = '')
+    filepath <- paste('figures/', fig_dir, plot, '_trajectory.png', sep = '')
     ggsave(filepath, plots[[plot]])
   }
   
   legend_theme <- theme(legend.text = element_text(size = 14)) 
   legend_colors <- guides(colour = guide_legend(override.aes = list(size=6)))
   
-  top_4_clusters <- ggarrange(plots[['3']] + legend_colors + legend_theme, NULL,
-                              plots[['5']] + legend_colors + legend_theme, NULL,
-                              plots[['7']] + legend_colors + legend_theme, NULL,
-                              plots[['8']] + legend_colors + legend_theme, 
+  top_4_clusters <- ggarrange(plots[[clusters_to_plot[1]]] + legend_colors + legend_theme, NULL,
+                              plots[[clusters_to_plot[2]]] + legend_colors + legend_theme, NULL,
+                              plots[[clusters_to_plot[3]]] + legend_colors + legend_theme, NULL,
+                              plots[[clusters_to_plot[4]]] + legend_colors + legend_theme, NULL,
                               common.legend = T, nrow = 1,
-                              widths = c(1, 0.1, 1, 0.1, 1, 0.1, 1))
+                              widths = c(1, 0.1, 1, 0.1, 1, 0.1, 1, 0.1))
   
-  ggsave('figures/top_clusters.png', top_4_clusters, width = 18, height = 6, units = 'in')
+  ggsave(paste('figures/top_clusters_', cell_line, '.png', sep = ''), top_4_clusters, width = 18, height = 6, units = 'in')
 }

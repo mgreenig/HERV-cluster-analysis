@@ -2,7 +2,7 @@ library(VennDiagram)
 library(EnhancedVolcano)
 library(gridExtra)
 
-source('preprocessing_Calu3.R')
+source('preprocessing_A549.R')
 
 # Wald tests to identify significant human genes for SARS vs mock, IAV vs mock, and SARS vs IAV
 dds_human_wald <- DESeq(dds_human, test = 'Wald', fitType = 'parametric') 

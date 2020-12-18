@@ -6,15 +6,12 @@ library(dendextend)
 
 SARSCov2_Calu3_human <- read.table('data/Gene_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_human <- read.table('data/Gene_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_human <- read.table('data/Gene_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
 
 SARSCov2_Calu3_retro <- read.table('data/Retro_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_retro <- read.table('data/Retro_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_retro <- read.table('data/Retro_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
 
 SARSCov2_Calu3_metadata <- read.table('data/Samples_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_metadata <- read.table('data/Samples_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
-SARSCov2_IAV_A549_metadata <- read.table('data/Samples_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
 
 # import human count data
 human_counts <- cbind(SARSCov2_Calu3_human, MERS_SARS_Calu3_human)
@@ -34,8 +31,8 @@ MERS_SARS_Calu3_metadata$Batch <- 1
 metadata <- rbind(SARSCov2_Calu3_metadata[,c('Batch', 'Infection')], MERS_SARS_Calu3_metadata[,c('Batch', 'Infection')])
 metadata$Infection <- as.character(metadata$Infection)
 metadata$Infection[grep('MOCK', metadata$Infection)] <- 'MOCK'
-metadata$Infection <- factor(metadata$Infection)
-metadata$Batch <- as.factor(metadata$Batch)
+metadata$Infection <- factor(metadata$Infection, levels = c('MOCK', 'SARS_Cov2', 'SARS', 'MERS'))
+metadata$Batch <- factor(metadata$Batch)
 
 # import gene ID database
 human_IDs <- org.Hs.eg.db
@@ -63,7 +60,7 @@ all_zero_human_mask <- apply(annotated_human_counts, 1, function(row){all(row ==
 non_zero_human_counts <- annotated_human_counts[!all_zero_human_mask,]
 
 # build DESeq model for human genes
-dds_human <- DESeq2::DESeqDataSetFromMatrix(non_zero_human_counts, metadata, design = ~Infection+Batch)
+dds_human <- DESeq2::DESeqDataSetFromMatrix(non_zero_human_counts, metadata, design = ~Infection)
 
 # get regularised human gene counts
 non_zero_human_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_human, blind = FALSE) %>% assay
@@ -71,7 +68,7 @@ non_zero_human_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_human
 non_zero_human_counts_scaled <- t(scale(t(non_zero_human_counts_reg)))
 
 # build DESeq model for retro genes
-dds_retro <- DESeq2::DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection+Batch)
+dds_retro <- DESeq2::DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection)
 
 # filter for highly-expressed genes
 dds_retro <- DESeq2::estimateSizeFactors(dds_retro)
@@ -82,44 +79,6 @@ dds_retro <- dds_retro[idx,]
 non_zero_retro_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_retro, blind = FALSE) %>% assay
 # scale to unit variance per-gene using transpose
 non_zero_retro_counts_scaled <- t(scale(t(non_zero_retro_counts_reg)))
-
-# function for removing batch effects using OLS fits with a batch variable
-remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', batch_col = 'Batch'){
-  
-  # make data matrices for all genes
-  Xs <- split(expr, 1:nrow(expr)) %>% 
-    lapply(function(row) cbind(exp = row, coldata)) 
-  
-  # make linear model formulas with column names
-  model_formula <- as.formula(paste('exp ~', condition_col, '+', batch_col))
-    
-  # generate linear models
-  linear_models <- lapply(Xs, lm, formula = model_formula)
-  
-  # get the vector of batch memberships
-  batch_levels <- sort(unique(coldata[,batch_col]))
-  batch_vector <- coldata[,batch_col]
-  
-  # get the batch effects in a matrix
-  batch_effects <- lapply(linear_models, function(model){
-    coefs <- model$coefficients[paste(batch_col, batch_levels[2:length(batch_levels)], sep='')] 
-    coefs <- c(0, coefs)
-    names(coefs) <- batch_levels
-    effect <- coefs[batch_vector]
-    return(effect)
-  }) %>%
-    do.call(rbind, .)
-  
-  # subtract the batch effect from the raw expression values
-  batch_adjusted_expr <- expr - batch_effects
-  
-  return(batch_adjusted_expr)
-  
-}
-
-# remove batch effects from human genes and retroelements
-non_zero_human_counts_scaled <- remove_batch_effects(non_zero_human_counts_scaled, metadata)
-non_zero_retro_counts_scaled <- remove_batch_effects(non_zero_retro_counts_scaled, metadata)
 
 # function for making PCA plot from a transcript count table
 plot_pca <- function(expr, title, coldata, condition_col = 'Infection', batch_col = 'Batch'){
@@ -168,17 +127,17 @@ plot_dendrogram <- function(expr, title){
 if(!interactive()){
   
   PCA_plot_human <- plot_pca(non_zero_human_counts_reg, title = 'Human genes', coldata = metadata)
-  ggsave('figures/PCA_sample_plot_human.png', PCA_plot_human)
+  ggsave(paste('figures/PCA_sample_plot_human_', cell_line, '.png', sep = ''), PCA_plot_human)
   
   PCA_plot_retro <- plot_pca(non_zero_retro_counts_reg, title = 'Retro genes', coldata = metadata) 
-  ggsave('figures/PCA_sample_plot_retro.png', PCA_plot_retro)
+  ggsave(paste('figures/PCA_sample_plot_retro_', cell_line, '.png', sep = ''), PCA_plot_retro)
   
   # get cluster dendrograms
-  png('figures/sample_dendrogram_human_genes.png', width = 1280, height = 720, units = 'px')
+  png(paste('figures/sample_dendrogram_human_genes_', cell_line, '.png', sep = ''), width = 1280, height = 720, units = 'px')
   plot_dendrogram(non_zero_human_counts_reg, title = 'Cluster dendrogram - based on human genes')
   dev.off()
   
-  png('figures/sample_dendrogram_retro_genes.png', width = 1280, height = 720, units = 'px')
+  png(paste('figures/sample_dendrogram_retro_genes_', cell_line, '.png', sep = ''), width = 1280, height = 720, units = 'px')
   plot_dendrogram(non_zero_retro_counts_reg, title = 'Cluster dendrogram - based on retro genes')
   dev.off()
 
