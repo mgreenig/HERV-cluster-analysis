@@ -82,8 +82,8 @@ eigengene_dists <- factoextra::get_dist(cluster_eigengenes, method = 'pearson')
 eigengene_clustering <- hclust(eigengene_dists, method = 'average')
 
 if(!interactive()){
-  png(paste('figures/dendrogram_gene_clusters_', cell_line, '.png', sep = ''), width = 720, height = 720, units = 'px')
-  plot(eigengene_clustering, ylab = '', xlab = '', sub = '', main = 'Cluster eigengenes')
+  png(paste('figures/dendrogram_gene_clusters_', cell_line, '.png', sep = ''), width = 1080, height = 720, units = 'px')
+  plot(eigengene_clustering, ylab = '', xlab = '', sub = '', main = 'Cluster eigengenes', cex.lab = 1.5, cex.main = 2, cex = 1.5)
   dev.off()
 }
 
@@ -146,7 +146,11 @@ retro_hub_genes <- lapply(cluster_hub_genes_all, function(genes, n) genes[genes 
 names(retro_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
 
 # plot module membership statistics for retro/human hub genes in 4 clusters
-clusters_to_plot <- c('5', '9', '11', '14')
+if(cell_line == 'Calu3'){
+  clusters_to_plot <- c('5', '9', '11', '14')
+} else {
+  clusters_to_plot <- c('3', '5', '7', '8')
+}
 
 # get module membership statistics for each cluster to plot
 module_membership_df <- lapply(clusters_to_plot, function(clus){

@@ -29,15 +29,6 @@ sig_human_genes_infection <- subset(dds_human_LRT_infection_results, padj < 0.05
 # get all sig genes for human LRT
 all_sig_human_gene_names_LRT <- rownames(sig_human_genes_infection)
 
-# make venn diagram for DE human genes found with LRT vs Wald
-VennDiagram::venn.diagram(x = list(all_sig_human_gene_names_wald, all_sig_human_gene_names_LRT),
-                          category.names = c('Wald tests', 'LRT'),
-                          filename = 'figures/Wald_vs_LRT_human_venn_diagram.png',
-                          main = 'Comparison of differentially-expressed human genes identifed by Wald tests and the likelihood ratio test',
-                          fill = c('lightblue', 'salmon'), cex = 0.5, main.fontface = 'bold',
-                          main.cex = 0.275, width = 1080, height = 720, resolution = 500, cat.dist = c(-0.05, -0.05),
-                          cat.cex = 0.5, ext.text = TRUE, ext.length = 0.9, ext.line.lwd = 0.5)
-
 # Wald tests to identify significant retro genes for SARS vs mock, IAV vs mock, and SARS vs IAV
 dds_retro_wald <- DESeq(dds_retro, test = 'Wald', fitType = 'parametric')
 
@@ -62,15 +53,6 @@ sig_retro_genes_infection <- subset(dds_retro_LRT_infection_results, padj < 0.05
 
 # get all sig genes for retro LRT
 all_sig_retro_gene_names_LRT <- rownames(sig_retro_genes_infection)
-
-# make venn diagram for DE human genes found with LRT vs Wald
-VennDiagram::venn.diagram(x = list(all_sig_retro_gene_names_wald, all_sig_retro_gene_names_LRT),
-                          category.names = c('Wald tests', 'LRT'),
-                          filename = 'figures/Wald_vs_LRT_retro_venn_diagram.png',
-                          main = 'Comparison of differentially-expressed retro genes identifed by Wald tests and the likelihood ratio test',
-                          fill = c('lightblue', 'salmon'), cex = 0.5, main.fontface = 'bold',
-                          main.cex = 0.275, width = 1080, height = 720, resolution = 500, cat.dist = c(-0.06, -0.04),
-                          cat.cex = 0.5, ext.text = TRUE, ext.length = 0.9, ext.line.lwd = 0.5)
 
 # combine DESeq tables for LRTs in retro/human genes
 all_sig_genes_infection <- rbind(sig_human_genes_infection, sig_retro_genes_infection) %>%

@@ -82,8 +82,8 @@ plot_trajectory <- function(mean_expr_df, cluster_number, retro_gene_list, condi
     geom_boxplot(aes(fill = gene_type), alpha = 0.75, outlier.shape = NA, coef = 0, show.legend = FALSE) +
     labs(y = 'Scaled expression\n', x = paste('\n', conditon_var, sep = ''), 
          title = paste('Cluster', cluster_number, '|', nrow(mean_expr_df), 'genes'),
-         subtitle = paste('Hub gene (human):', cluster_hub_genes[[as.character(cluster_number)]], 
-                          '\nHub gene (retro):', retro_hub_genes[[as.character(cluster_number)]]),
+         subtitle = paste('Hub gene:', cluster_hub_genes[[as.character(cluster_number)]], 
+                          '\nHub retroelement:', retro_hub_genes[[as.character(cluster_number)]]),
          colour = 'Gene type') + 
     theme_minimal() + text_theme + theme(plot.title = element_text(face = 'bold')) + 
     scale_color_manual(values = c('#00BFC4', '#F8766D')) + 
@@ -113,7 +113,7 @@ names(plots) <- unique(all_sig_genes_infection_expr$cluster)
 
 if(!interactive()){
   fig_dir <- paste(cell_line, '_clusters/', sep = '')
-  dir.create(fig_dir, showWarnings = FALSE)
+  dir.create(paste('figures/', fig_dir, sep = ''), showWarnings = FALSE)
   for(plot in names(plots)){
     filepath <- paste('figures/', fig_dir, plot, '_trajectory.png', sep = '')
     ggsave(filepath, plots[[plot]])

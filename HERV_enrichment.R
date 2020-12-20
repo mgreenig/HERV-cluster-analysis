@@ -1,13 +1,15 @@
 library(dplyr)
 
 # import from script running differential expression analysis
-source('DE_testing.R')
+cell_line <- 'Calu3'
+
+source(paste('DE_testing_', cell_line, '.R', sep = ''))
 
 # import HERV annotation table
 retro_annotations <- read.table('data/Retro_annotation.tsv', col.names = c('Locus','Class','Family','Category','Chrom','Start','End','Strand'))
 
 # function for going from producing a p-value table from annotations of significant genes
-get_feature_enrichment <- function(annotation_df, sig_genes, feature, adjust.p = c(TRUE, FALSE), adjust.p.method = 'BH'){
+get_feature_enrichment <- function(annotation_df, sig_genes, feature, adjust.p = TRUE, adjust.p.method = 'BH'){
   
   # Function takes in an annotation dataframe, a list of DE genes, and a feature of interest
   # and returns a dataframe containing information on enrichment of the feature in the DE genes
@@ -35,7 +37,7 @@ get_feature_enrichment <- function(annotation_df, sig_genes, feature, adjust.p =
   
   # get total number of elements in each feature category
   sig_genes_by_feature$n_category <- sapply(sig_genes_by_feature[[feature]], function(category){
-    n <- retro_annotations$Locus[annotation_df[,feature] == category] %>%
+    n <- annotation_df$Locus[annotation_df[,feature] == category] %>%
       unique %>%
       length
     return(n)
@@ -70,7 +72,7 @@ get_feature_enrichment <- function(annotation_df, sig_genes, feature, adjust.p =
 retro_family_enrichment_Cov2 <- get_feature_enrichment(retro_annotations, sig_genes = rownames(sig_retro_genes_Cov2),
                                                        feature = 'Family')
 retro_family_enrichment_infection <- get_feature_enrichment(retro_annotations, sig_genes = rownames(sig_retro_genes_infection),
-                                                             feature = 'Family')
+                                                            feature = 'Family')
 
 # get enrichment for different categories
 retro_category_enrichment_Cov2 <- get_feature_enrichment(retro_annotations, sig_genes = rownames(sig_retro_genes_Cov2), 
