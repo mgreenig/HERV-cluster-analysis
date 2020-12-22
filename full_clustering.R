@@ -2,7 +2,9 @@ library(dynamicTreeCut)
 library(factoextra)
 library(pheatmap)
 
-cell_line <- 'Calu3'
+if(!exists("cell_line")){
+  cell_line <- commandArgs(trailingOnly = TRUE)
+}
 
 source(paste('DE_testing_', cell_line, '.R', sep = ''))
 

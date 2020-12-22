@@ -1,6 +1,8 @@
 library(reshape2)
 library(ggpubr)
 
+cell_line <- commandArgs(trailingOnly = TRUE)
+
 source('full_clustering.R')
 
 # function for getting the mean expression for each gene per condition for a gene expression data frame

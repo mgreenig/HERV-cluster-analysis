@@ -1,6 +1,8 @@
 library(clusterProfiler)
 library(RColorBrewer)
 
+cell_line <- commandArgs(trailingOnly = TRUE)
+
 source('full_clustering.R')
 
 # function for getting either enriched GO or KEGG terms
