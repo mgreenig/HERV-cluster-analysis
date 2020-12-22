@@ -51,6 +51,7 @@ cluster_size_plot <- ggplot(cluster_sizes, aes(x = cluster, y = n)) +
   theme_minimal() + text_theme
 
 if(!interactive()){
+  write.csv(all_sig_genes_infection_expr, paste('data/clustered_genes_', cell_line, '.csv', sep = ''), row.names = T)
   ggsave(paste('figures/cluster_sizes_', cell_line, '.png', sep = ''), cluster_size_plot)
 }
 
