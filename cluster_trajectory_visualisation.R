@@ -1,5 +1,5 @@
-library(reshape2)
-library(ggpubr)
+suppressPackageStartupMessages(library(reshape2))
+suppressPackageStartupMessages(library(ggpubr))
 
 if(!exists("cell_line")){
   cell_line <- commandArgs(trailingOnly = TRUE)

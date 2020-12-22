@@ -1,8 +1,8 @@
-library(org.Hs.eg.db)
-library(dplyr)
-library(DESeq2)
-library(ggplot2)
-library(dendextend)
+suppressPackageStartupMessages(library(org.Hs.eg.db))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(DESeq2))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(dendextend))
 
 SARSCov2_Calu3_human <- read.table('data/Gene_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_human <- read.table('data/Gene_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
@@ -125,6 +125,10 @@ plot_dendrogram <- function(expr, title){
 
 # if run from the command line, make plots
 if(!interactive()){
+  
+  if(!dir.exists('figures')){
+    dir.create('figures')
+  }
   
   PCA_plot_human <- plot_pca(non_zero_human_counts_reg, title = 'Human genes', coldata = metadata)
   ggsave(paste('figures/PCA_sample_plot_human_', cell_line, '.png', sep = ''), PCA_plot_human)

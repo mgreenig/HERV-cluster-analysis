@@ -1,6 +1,6 @@
-library(dynamicTreeCut)
-library(factoextra)
-library(pheatmap)
+suppressPackageStartupMessages(library(dynamicTreeCut))
+suppressPackageStartupMessages(library(factoextra))
+suppressPackageStartupMessages(library(pheatmap))
 
 if(!exists("cell_line")){
   cell_line <- commandArgs(trailingOnly = TRUE)
@@ -22,6 +22,8 @@ all_sig_genes_infection_expr <- rbind(sig_human_genes_infection_expr, sig_retro_
 # get network adjacency matrix as 1 - correlation matrix squared
 all_sig_genes_dist <- factoextra::get_dist(all_sig_genes_infection_expr, method = 'pearson')
 
+print('Running clustering on human genes and retroelements...')
+
 # cluster and use dynamic tree cut
 all_sig_genes_dendro <- hclust(all_sig_genes_dist, method = 'average')
 all_sig_genes_clusters <- dynamicTreeCut::cutreeDynamicTree(all_sig_genes_dendro, maxTreeHeight = 1.95, 
@@ -32,6 +34,8 @@ all_sig_genes_infection$cluster <- all_sig_genes_clusters + 1
 all_sig_genes_infection_expr$cluster <- all_sig_genes_clusters + 1
 all_sig_genes_infection_expr$gene_type <- ifelse(rownames(all_sig_genes_infection_expr) %in% rownames(sig_retro_genes_infection_expr),
                                                  'Retroelement', 'Human')
+
+print(paste('Found', length(unique(all_sig_genes_clusters)), 'clusters'))
 
 # get size of each cluster
 cluster_sizes <- all_sig_genes_infection_expr %>% 
@@ -45,6 +49,10 @@ cluster_size_plot <- ggplot(cluster_sizes, aes(x = cluster, y = n)) +
   scale_x_discrete(limits = rev(levels(cluster_sizes$cluster))) + coord_flip() + 
   labs(x = 'Cluster', y = 'Number of genes', title = 'Number of genes per cluster') +
   theme_minimal() + text_theme
+
+if(!interactive()){
+  ggsave(paste('figures/cluster_sizes_', cell_line, '.png', sep = ''), cluster_size_plot)
+}
 
 # function for getting eigengene for a cluster
 get_eigengene <- function(expr, cluster_number){
@@ -184,5 +192,7 @@ module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr
                           text = element_text(size = 18)) + ylim(c(0,1.05)) +
   scale_fill_manual(values = c('#00BFC4', '#F8766D'), labels = c('Human', 'Retroelement'))
 
-ggsave(paste('figures/module_membership_plot_', cell_line, '.png', sep = ''),
-       module_membership_plot, width = 12, height = 6, units = 'in')
+if(!interactive()){
+  ggsave(paste('figures/module_membership_plot_', cell_line, '.png', sep = ''),
+         module_membership_plot, width = 12, height = 6, units = 'in')
+}

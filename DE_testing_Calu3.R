@@ -1,6 +1,4 @@
-library(VennDiagram)
-library(EnhancedVolcano)
-library(gridExtra)
+suppressPackageStartupMessages(library(gridExtra))
 
 source('preprocessing_Calu3.R')
 
@@ -106,9 +104,9 @@ make_pvalue_histogram <- function(DESeq_results, title, save = FALSE){
 
 # p-value histograms
 dds_human_LRT_pval_plot <- make_pvalue_histogram(dds_human_LRT_infection_results, 
-                                                 title = 'p-value histogram for the likelihood ratio test for SARS-MERS-SARSCov2 infection (human genes)', 
+                                                 title = paste('pvalue_histogram_LRT_human_', cell_line, sep = ''),
                                                  save = TRUE)
 
 dds_retro_LRT_pval_plot <- make_pvalue_histogram(dds_retro_LRT_infection_results, 
-                                                 title = 'p-value histogram for the likelihood ratio test for SARS-MERS-SARSCov2 infection (retro genes)', 
+                                                 title = paste('pvalue_histogram_LRT_retro_', cell_line, sep = ''), 
                                                  save = TRUE)

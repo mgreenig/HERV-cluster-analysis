@@ -1,5 +1,5 @@
-library(clusterProfiler)
-library(RColorBrewer)
+suppressPackageStartupMessages(library(clusterProfiler))
+suppressPackageStartupMessages(library(RColorBrewer))
 
 if(!exists("cell_line")){
   cell_line <- commandArgs(trailingOnly = TRUE)

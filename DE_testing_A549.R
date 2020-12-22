@@ -1,6 +1,5 @@
-library(VennDiagram)
-library(EnhancedVolcano)
-library(gridExtra)
+suppressPackageStartupMessages(library(EnhancedVolcano))
+suppressPackageStartupMessages(library(gridExtra))
 
 source('preprocessing_A549.R')
 
@@ -82,24 +81,24 @@ make_pvalue_histogram <- function(DESeq_results, title, save = FALSE){
 
 # p-value histograms
 dds_human_Cov2_pval_plot <- make_pvalue_histogram(dds_human_Cov2_results, 
-                                                  title = 'p-value histogram for the Cov2-mock comparison (human genes)', save = TRUE)
+                                                  title = paste('pvalue_histogram_Cov2_mock_human_', cell_line, sep = ''), save = TRUE)
 dds_human_IAV_pval_plot <- make_pvalue_histogram(dds_human_IAV_results, 
-                                                 title = 'p-value histogram for the IAV-mock comparison (human genes)', save = TRUE)
+                                                 title = paste('pvalue_histogram_IAV_mock_human_', cell_line, sep = ''), save = TRUE)
 dds_human_Cov2_IAV_pval_plot <- make_pvalue_histogram(dds_human_Cov2_IAV_results, 
-                                                      title = 'p-value histogram for the Cov2-IAV comparison (human genes)', save = TRUE)
+                                                      title = paste('pvalue_histogram_Cov2_IAV_human_', cell_line, sep = ''), save = TRUE)
 
 dds_human_LRT_pval_plot <- make_pvalue_histogram(dds_human_LRT_infection_results, 
-                                                 title = 'p-value histogram for the likelihood ratio test for viral infection (human genes)', save = TRUE)
+                                                 title = paste('pvalue_histogram_LRT_human_', cell_line, sep = ''), save = TRUE)
 
 dds_retro_Cov2_pval_plot <- make_pvalue_histogram(dds_retro_Cov2_results, 
-                                                  title = 'p-value histogram for the Cov2-mock comparison (retro genes)', save = TRUE)
+                                                  title = paste('pvalue_histogram_Cov2_mock_retro_', cell_line, sep = ''), save = TRUE)
 dds_retro_IAV_pval_plot <- make_pvalue_histogram(dds_retro_IAV_results, 
-                                                 title = 'p-value histogram for the IAV-mock comparison (retro genes)', save = TRUE)
+                                                 title = paste('pvalue_histogram_IAV_mock_retro_', cell_line, sep = ''), save = TRUE)
 dds_retro_Cov2_IAV_pval_plot <- make_pvalue_histogram(dds_retro_Cov2_IAV_results, 
-                                                      title = 'p-value histogram for the Cov2-IAV comparison (retro genes)', save = TRUE)
+                                                      title = paste('pvalue_histogram_Cov2_IAV_retro_', cell_line, sep = ''), save = TRUE)
 
 dds_retro_LRT_pval_plot <- make_pvalue_histogram(dds_retro_LRT_infection_results, 
-                                                 title = 'p-value histogram for the likelihood ratio test for viral infection (retro genes)', save = TRUE)
+                                                 title = paste('pvalue_histogram_LRT_retro_', cell_line, sep = ''), save = TRUE)
 
 # function to make volcano plot from DESeq results
 make_volcano_plot <- function(DESeq_results, title, transcript_type = c('Human genes', 'Retroelements')){
@@ -149,5 +148,5 @@ if(!interactive()){
                                     dds_retro_Cov2_IAV_pval_plot, 
                                     ncol = 3, nrow = 2)
   
-  ggsave('figures/volcano_plot.png', plot = all_volcano_plots, width = 50.8, height = 28.6, units = 'cm')
+  ggsave('figures/volcano_plots.png', plot = all_volcano_plots, width = 50.8, height = 28.6, units = 'cm')
 }

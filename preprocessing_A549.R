@@ -1,8 +1,8 @@
-library(org.Hs.eg.db)
-library(dplyr)
-library(DESeq2)
-library(ggplot2)
-library(dendextend)
+suppressPackageStartupMessages(library(org.Hs.eg.db))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(DESeq2))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(dendextend))
 
 # import human count data
 human_counts <- read.table('data/Gene_Counts_COV2hm_IAV_A549.txt', sep = "\t", header = TRUE)
