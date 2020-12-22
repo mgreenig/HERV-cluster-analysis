@@ -1,0 +1,9 @@
+download_path	SampleName	Protocol	Infection	Time	What	MOI	Treatment	Platform	Title
+SRR1942929	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942929/SRR1942929.1	DEAB_SC0	NA	SARS	0	Calu-3	NA	NA	Illumina HiSeq 4000	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942934	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942934/SRR1942934.1	DEAB_SC0	NA	SARS	0	Calu-3	NA	NA	Illumina HiSeq 4000	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942956	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942956/SRR1942956.1	DEAB_SC24	NA	SARS	24	Calu-3	NA	NA	Illumina HiSeq 3000	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942957	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942957/SRR1942957.1	DEAB_SC24	NA	SARS	24	Calu-3	NA	NA	Illumina HiSeq 3000	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942960	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942960/SRR1942960.1	DEAB_EC0	NA	MERS	0	Calu-3	NA	NA	NextSeq 500	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942961	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942961/SRR1942961.1	DEAB_EC0	NA	MERS	0	Calu-3	NA	NA	NextSeq 500	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942989	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942989/SRR1942989.1	DEAB_EC24	NA	MERS	24	Calu-3	NA	NA	NextSeq 500	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV
+SRR1942990	https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos1/sra-pub-run-5/SRR1942990/SRR1942990.1	DEAB_EC24	NA	MERS	24	Calu-3	NA	NA	NextSeq 500	Gene expression profile in Calu-3 cells infected with MERS-CoV or SARS-CoV

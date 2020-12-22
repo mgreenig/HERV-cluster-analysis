@@ -1,0 +1,7 @@
+SampleName	Infection	Time	What	MOI	Title	Group
+Calu3_mock3	Calu3_mock3	MOCK_SARS_Cov2	24	Calu3	None	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	MOCK_SARS_Cov2_Calu3
+Calu3_mock2	Calu3_mock2	MOCK_SARS_Cov2	24	Calu3	None	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	MOCK_SARS_Cov2_Calu3
+Calu3_mock1	Calu3_mock1	MOCK_SARS_Cov2	24	Calu3	None	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	MOCK_SARS_Cov2_Calu3
+Calu3_SARSCoV2_3	Calu3_SARSCoV2_3	SARS_Cov2	24	Calu3	2	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	SARS_Cov2_Calu3
+Calu3_SARSCoV2_2	Calu3_SARSCoV2_2	SARS_Cov2	24	Calu3	2	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	SARS_Cov2_Calu3
+Calu3_SARSCoV2_1	Calu3_SARSCoV2_1	SARS_Cov2	24	Calu3	2	Transcriptional response of human lung epithelial cells to SARS-CoV-2 infection	SARS_Cov2_Calu3
