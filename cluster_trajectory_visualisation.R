@@ -1,7 +1,13 @@
 library(reshape2)
 library(ggpubr)
 
-cell_line <- commandArgs(trailingOnly = TRUE)
+if(!exists("cell_line")){
+  cell_line <- commandArgs(trailingOnly = TRUE)
+}
+
+if(cell_line != 'Calu3' & cell_line != 'A549'){
+  stop('Please input either Calu3 or A549 as the argument after the script name')
+}
 
 source('full_clustering.R')
 
