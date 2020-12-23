@@ -1,8 +1,32 @@
+get_reqs <- function(reqs){
+  reqs_not_present <- reqs[!(reqs %in% installed.packages()[,'Package'])]
+  if(length(reqs_not_present) > 0){
+    install.packages(reqs_not_present, repos = 'http://cran.us.r-project.org')
+  }
+}
+
+get_bioc_reqs <- function(reqs){
+  
+  if (!requireNamespace("BiocManager", quietly = TRUE)){
+    install.packages("BiocManager")
+  }
+  
+  reqs_not_present <- reqs[!(reqs %in% installed.packages()[,'Package'])]
+  if(length(reqs_not_present) > 0){
+    BiocManager::install(reqs_not_present)
+  }
+}
+
+reqs <- c('ggplot2', 'dplyr', 'stringr')
+get_reqs(reqs)
+bioc_reqs <- c('DESeq2', 'org.Hs.eg.db')
+get_bioc_reqs(bioc_reqs)
+
 suppressPackageStartupMessages(library(org.Hs.eg.db))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(DESeq2))
 suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(dendextend))
+suppressPackageStartupMessages(library(stringr))
 
 SARSCov2_Calu3_human <- read.table('data/Gene_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_human <- read.table('data/Gene_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
@@ -116,11 +140,7 @@ plot_dendrogram <- function(expr, title){
   dend <- as.dendrogram(samples_clustering)
   
   # return plot
-  dend_labels <- labels(dend)
-  labels(dend) <- ""
   plot(dend)
-  text(x = 1:length(dend_labels), labels = dend_labels, srt = 45, adj = c(1,1), xpd = T)
-
 }
 
 # if run from the command line, make plots

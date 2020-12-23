@@ -1,7 +1,3 @@
-suppressPackageStartupMessages(library(dynamicTreeCut))
-suppressPackageStartupMessages(library(factoextra))
-suppressPackageStartupMessages(library(pheatmap))
-
 if(!exists("cell_line")){
   cell_line <- commandArgs(trailingOnly = TRUE)
 }
@@ -11,6 +7,13 @@ if(cell_line != 'Calu3' & cell_line != 'A549'){
 }
 
 source(paste('DE_testing_', cell_line, '.R', sep = ''))
+
+reqs <- c('dynamicTreeCut', 'factoextra', 'pheatmap')
+get_reqs(reqs)
+
+suppressPackageStartupMessages(library(dynamicTreeCut))
+suppressPackageStartupMessages(library(factoextra))
+suppressPackageStartupMessages(library(pheatmap))
 
 # set ggplot theme for increased text size
 text_theme <- theme(plot.title = element_text(size = 18, hjust = 0.5), text = element_text(size = 14), plot.subtitle = element_text(size = 16, hjust = 0.5))
@@ -22,7 +25,7 @@ all_sig_genes_infection_expr <- rbind(sig_human_genes_infection_expr, sig_retro_
 # get network adjacency matrix as 1 - correlation matrix squared
 all_sig_genes_dist <- factoextra::get_dist(all_sig_genes_infection_expr, method = 'pearson')
 
-print('Running clustering on human genes and retroelements...')
+print(paste('Running clustering on', nrow(all_sig_genes_infection_expr), 'human genes and retroelements...'))
 
 # cluster and use dynamic tree cut
 all_sig_genes_dendro <- hclust(all_sig_genes_dist, method = 'average')
@@ -182,6 +185,7 @@ module_membership_df <- lapply(clusters_to_plot, function(clus){
   }) %>%
   do.call(rbind, .)
 module_membership_df$gene <- gsub('\\..*$', '', module_membership_df$gene)
+module_membership_df$cluster <- factor(module_membership_df$cluster, levels = clusters_to_plot)
 
 # plot module memberships
 module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr, fill = type, label = gene)) + 

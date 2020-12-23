@@ -1,6 +1,9 @@
-suppressPackageStartupMessages(library(gridExtra))
-
 source('preprocessing_Calu3.R')
+
+reqs <- c('gridExtra')
+get_reqs(reqs)
+
+suppressPackageStartupMessages(library(gridExtra))
 
 # Wald tests to identify significant human genes for all pairwise comparisons
 dds_human_wald <- DESeq(dds_human, test = 'Wald', fitType = 'parametric') 

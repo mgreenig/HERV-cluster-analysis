@@ -1,7 +1,12 @@
+source('preprocessing_A549.R')
+
+reqs <- c('gridExtra')
+get_reqs(reqs)
+bioc_reqs <- c('EnhancedVolcano')
+get_bioc_reqs(bioc_reqs)
+
 suppressPackageStartupMessages(library(EnhancedVolcano))
 suppressPackageStartupMessages(library(gridExtra))
-
-source('preprocessing_A549.R')
 
 # Wald tests to identify significant human genes for SARS vs mock, IAV vs mock, and SARS vs IAV
 dds_human_wald <- DESeq(dds_human, test = 'Wald', fitType = 'parametric') 
@@ -105,7 +110,7 @@ make_volcano_plot <- function(DESeq_results, title, transcript_type = c('Human g
   
   volcano_plot <- EnhancedVolcano::EnhancedVolcano(DESeq_results, lab = rownames(DESeq_results), 
                                                    x = 'log2FoldChange', y = 'padj', caption = '', 
-                                                   title = title, transcriptLabSize = 7, 
+                                                   title = title, labSize = 7, 
                                                    subtitle = transcript_type, titleLabSize = 24,
                                                    subtitleLabSize = 22) + xlim(-20, 20)
   

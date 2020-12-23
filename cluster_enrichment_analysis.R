@@ -1,3 +1,10 @@
+source('full_clustering.R')
+
+reqs <- c('RColorBrewer')
+get_reqs(reqs)
+bioc_reqs <- c('clusterProfiler')
+get_bioc_reqs(bioc_reqs)
+
 suppressPackageStartupMessages(library(clusterProfiler))
 suppressPackageStartupMessages(library(RColorBrewer))
 
@@ -8,8 +15,6 @@ if(!exists("cell_line")){
 if(cell_line != 'Calu3' & cell_line != 'A549'){
   stop('Please input either Calu3 or A549 as the argument after the script name')
 }
-
-source('full_clustering.R')
 
 # function for getting either enriched GO or KEGG terms
 get_enriched_terms <- function(gene_symbols, terms = c('GO', 'KEGG')){

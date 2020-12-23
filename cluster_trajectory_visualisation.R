@@ -1,6 +1,3 @@
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(ggpubr))
-
 if(!exists("cell_line")){
   cell_line <- commandArgs(trailingOnly = TRUE)
 }
@@ -10,6 +7,12 @@ if(cell_line != 'Calu3' & cell_line != 'A549'){
 }
 
 source('full_clustering.R')
+
+reqs <- c('reshape2', 'ggpubr')
+get_reqs(reqs)
+
+suppressPackageStartupMessages(library(reshape2))
+suppressPackageStartupMessages(library(ggpubr))
 
 # function for getting the mean expression for each gene per condition for a gene expression data frame
 get_mean_expr_per_group <- function(expr, coldata, condition_col = 'Infection'){
