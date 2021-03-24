@@ -47,9 +47,10 @@ MERS_SARS_Calu3_metadata$Infection <- ifelse(MERS_SARS_Calu3_metadata$Time == 0,
 human_counts <- cbind(SARSCov2_Calu3_human, MERS_SARS_Calu3_human)
 
 # join retroelement counts
-shared_retroelements <- rownames(SARSCov2_Calu3_retro)[rownames(SARSCov2_Calu3_retro) %in% rownames(MERS_SARS_Calu3_retro)]
-retro_counts <- cbind(SARSCov2_Calu3_retro[shared_retroelements,], 
-                      MERS_SARS_Calu3_retro[shared_retroelements,])
+retro_counts <- merge(SARSCov2_Calu3_retro, MERS_SARS_Calu3_retro, by = 'row.names', all = TRUE)
+rownames(retro_counts) <- retro_counts$Row.names 
+retro_counts$Row.names <- NULL
+retro_counts[is.na(retro_counts)] <- 0
 
 # remove retro genes with zero counts
 all_zero_retro_mask <- apply(retro_counts, 1, function(row){all(row == 0)})
