@@ -1,6 +1,8 @@
 get_reqs <- function(reqs){
   reqs_not_present <- reqs[!(reqs %in% installed.packages()[,'Package'])]
   if(length(reqs_not_present) > 0){
+    reqs_to_install <- paste(reqs_not_present, sep = ', ')
+    writeLines(paste(reqs_to_install, 'not found, installing now.'))
     install.packages(reqs_not_present, repos = 'http://cran.us.r-project.org')
   }
 }
@@ -13,6 +15,8 @@ get_bioc_reqs <- function(reqs){
   
   reqs_not_present <- reqs[!(reqs %in% installed.packages()[,'Package'])]
   if(length(reqs_not_present) > 0){
+    reqs_to_install <- paste(reqs_not_present, sep = ', ')
+    writeLines(paste(reqs_to_install, 'not found, installing now.'))
     BiocManager::install(reqs_not_present)
   }
 }
@@ -28,6 +32,7 @@ suppressPackageStartupMessages(library(DESeq2))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(stringr))
 
+# import count matrices
 SARSCov2_Calu3_human <- read.table('data/Gene_Counts_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_human <- read.table('data/Gene_Counts_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 
@@ -36,11 +41,12 @@ MERS_SARS_Calu3_retro <- read.table('data/Retro_Counts_MERSSARS_Calu3_4Jez.txt',
 
 SARSCov2_Calu3_metadata <- read.table('data/Samples_Covid19_Calu3_4Jez.txt', sep = "\t", header = TRUE)
 MERS_SARS_Calu3_metadata <- read.table('data/Samples_MERSSARS_Calu3_4Jez.txt', sep = "\t", header = TRUE)
+MERS_SARS_Calu3_metadata$Infection <- ifelse(MERS_SARS_Calu3_metadata$Time == 0, 'MOCK', MERS_SARS_Calu3_metadata$Infection)
 
-# import human count data
+# join human counts
 human_counts <- cbind(SARSCov2_Calu3_human, MERS_SARS_Calu3_human)
 
-# import retroelement count data
+# join retroelement counts
 shared_retroelements <- rownames(SARSCov2_Calu3_retro)[rownames(SARSCov2_Calu3_retro) %in% rownames(MERS_SARS_Calu3_retro)]
 retro_counts <- cbind(SARSCov2_Calu3_retro[shared_retroelements,], 
                       MERS_SARS_Calu3_retro[shared_retroelements,])
@@ -84,15 +90,13 @@ all_zero_human_mask <- apply(annotated_human_counts, 1, function(row){all(row ==
 non_zero_human_counts <- annotated_human_counts[!all_zero_human_mask,]
 
 # build DESeq model for human genes
-dds_human <- DESeq2::DESeqDataSetFromMatrix(non_zero_human_counts, metadata, design = ~Infection)
+dds_human <- DESeq2::DESeqDataSetFromMatrix(non_zero_human_counts, metadata, design = ~Infection+Batch)
 
 # get regularised human gene counts
 non_zero_human_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_human, blind = FALSE) %>% assay
-# scale to unit variance per-gene using transpose
-non_zero_human_counts_scaled <- t(scale(t(non_zero_human_counts_reg)))
 
 # build DESeq model for retro genes
-dds_retro <- DESeq2::DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection)
+dds_retro <- DESeq2::DESeqDataSetFromMatrix(non_zero_retro_counts, metadata, design = ~Infection+Batch)
 
 # filter for highly-expressed genes
 dds_retro <- DESeq2::estimateSizeFactors(dds_retro)
@@ -101,7 +105,47 @@ dds_retro <- dds_retro[idx,]
 
 # get regularised retro gene counts
 non_zero_retro_counts_reg <- DESeq2::varianceStabilizingTransformation(dds_retro, blind = FALSE) %>% assay
+
+# function for removing batch effects using OLS fits with a batch variable
+remove_batch_effects <- function(expr, coldata, condition_col = 'Infection', batch_col = 'Batch'){
+  
+  # make data matrices for all genes
+  Xs <- split(expr, 1:nrow(expr)) %>% 
+    lapply(function(row) cbind(exp = row, coldata)) 
+  
+  # make linear model formulas with column names
+  model_formula <- as.formula(paste('exp ~', condition_col, '+', batch_col))
+  
+  # generate linear models
+  linear_models <- lapply(Xs, lm, formula = model_formula)
+  
+  # get the vector of batch memberships
+  batch_levels <- sort(unique(coldata[,batch_col]))
+  batch_vector <- coldata[,batch_col]
+  
+  # get the batch effects in a matrix
+  batch_effects <- lapply(linear_models, function(model){
+    coefs <- model$coefficients[paste(batch_col, batch_levels[2:length(batch_levels)], sep='')] 
+    coefs <- c(0, coefs)
+    names(coefs) <- batch_levels
+    effect <- coefs[batch_vector]
+    return(effect)
+  }) %>%
+    do.call(rbind, .)
+  
+  # subtract the batch effect from the raw expression values
+  batch_adjusted_expr <- expr - batch_effects
+  
+  return(batch_adjusted_expr)
+  
+}
+
+# remove batch effects from human genes and retroelements
+non_zero_human_counts_reg <- remove_batch_effects(non_zero_human_counts_reg, metadata)
+non_zero_retro_counts_reg <- remove_batch_effects(non_zero_retro_counts_reg, metadata)
+
 # scale to unit variance per-gene using transpose
+non_zero_human_counts_scaled <- t(scale(t(non_zero_human_counts_reg)))
 non_zero_retro_counts_scaled <- t(scale(t(non_zero_retro_counts_reg)))
 
 # function for making PCA plot from a transcript count table
