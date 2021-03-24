@@ -37,4 +37,10 @@ for the Calu3 cell data. To reproduce the enrichment analysis, run:
 Rscript cluster_enrichment_analysis.R A549
 ```
 
-Replace A549 with Calu3 as before for the other data set.
+Replace A549 with Calu3 as before for the other data set. 
+
+Alternatively, we also provide a bash script for running the whole pipeline:
+
+```
+bash run_pipeline.sh
+```
