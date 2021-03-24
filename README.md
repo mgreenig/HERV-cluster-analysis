@@ -8,28 +8,11 @@ by Blanco-Melo and colleagues. A human/HERV gene correlation network is construc
 
 ## Dependencies
 
-This package uses R version 3.6 and requires the following package versions:
-
-- dplyr == 0.8.3
-- ggplot2 == 3.2.1
-- stringr == 1.4.0
-- org.Hs.eg.db == 3.8.2
-- DESeq2 == 1.24.0
-- gridExtra == 2.3
-- EnhancedVolcano == 1.2.0
-- factoextra == 1.0.5
-- dynamicTreeCut == 1.63-1
-- pheatmap == 1.0.12
-- clusterProfiler == 3.12.0
-- RColorBrewer == 1.1-2
-- reshape2 == 1.4.3
-- ggpubr == 0.4.0
-
-All packages are installed automatically by running the scripts (if not already present).
+This package uses R version 4.0. All required packages are installed automatically by running the scripts (if not already present).
 
 ## Reproducing the analysis
 
-First, ensure that R version 3.6 is installed and added to your system's environment path variable. 
+First, ensure that R version 4.0 is installed and added to your system's environment path variable. 
 To confirm that the correct version of R is being used, run from the command line:
 
 ```
