@@ -84,7 +84,7 @@ enriched_GO_annotations <- lapply(enriched_GO_annotations, function(ann) {
 # combine enriched GO annotations into a single dataframe, write to file
 enriched_GO_annotations_combined <- do.call(rbind, lapply(enriched_GO_annotations, function(ann) ann@result[1:10,]))
 enriched_GO_annotations_to_export <- enriched_GO_annotations_combined[,c('term', 'GeneRatio', 'BgRatio', 'pvalue', 'p.adjust', 'qvalue', 'cluster')]
-write.csv(enriched_GO_annotations_to_export, 'data/enriched_GO_annotations.csv')
+write.csv(enriched_GO_annotations_to_export, paste0('data/enriched_GO_annotations_', cell_line, '.csv'), row.names = F)
 
 # get enriched KEGG annotations
 enriched_KEGG_annotations <- lapply(unique(all_sig_genes_infection$cluster), function(cluster){
@@ -120,7 +120,7 @@ enriched_KEGG_annotations <- lapply(enriched_KEGG_annotations, function(ann) {
 # combine enriched GO annotations into a single dataframe, write to file
 enriched_KEGG_annotations_combined <- do.call(rbind, lapply(enriched_KEGG_annotations, function(ann) ann@result[1:10,]))
 enriched_KEGG_annotations_to_export <- enriched_KEGG_annotations_combined[,c('term', 'GeneRatio', 'BgRatio', 'pvalue', 'p.adjust', 'qvalue', 'cluster')]
-write.csv(enriched_KEGG_annotations_to_export, 'data/enriched_KEGG_annotations.csv')
+write.csv(enriched_KEGG_annotations_to_export, paste0('data/enriched_KEGG_annotations_', cell_line, '.csv'), row.names = F)
 
 # function for parsing enrichment results, looking up genes in the DE results
 parse_ann <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
