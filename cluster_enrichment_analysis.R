@@ -59,6 +59,7 @@ enriched_GO_annotations <- lapply(unique(all_sig_genes_infection$cluster), funct
   
   # get enriched gene ontologies for the cluster genes
   enriched_GO_terms <- get_enriched_terms(genes, terms = 'GO')
+  enriched_GO_terms@result$cluster <- cluster
   return(enriched_GO_terms)
   
 })
@@ -80,6 +81,11 @@ enriched_GO_annotations <- lapply(enriched_GO_annotations, function(ann) {
   return(ann)
 })
 
+# combine enriched GO annotations into a single dataframe, write to file
+enriched_GO_annotations_combined <- do.call(rbind, lapply(enriched_GO_annotations, function(ann) ann@result[1:10,]))
+enriched_GO_annotations_to_export <- enriched_GO_annotations_combined[,c('term', 'GeneRatio', 'BgRatio', 'pvalue', 'p.adjust', 'qvalue', 'cluster')]
+write.csv(enriched_GO_annotations_to_export, 'data/enriched_GO_annotations.csv')
+
 # get enriched KEGG annotations
 enriched_KEGG_annotations <- lapply(unique(all_sig_genes_infection$cluster), function(cluster){
   
@@ -91,6 +97,7 @@ enriched_KEGG_annotations <- lapply(unique(all_sig_genes_infection$cluster), fun
   
   # get enriched KEGG pathways for the cluster genes
   enriched_KEGG_terms <- get_enriched_terms(genes, terms = 'KEGG')
+  enriched_KEGG_terms@result$cluster <- cluster
   return(enriched_KEGG_terms)
   
 })
@@ -109,6 +116,11 @@ enriched_KEGG_annotations <- lapply(enriched_KEGG_annotations, function(ann) {
   ann@result$term <- paste(ann@result$ID, ann@result$Description, sep = ': ')
   return(ann)
 })
+
+# combine enriched GO annotations into a single dataframe, write to file
+enriched_KEGG_annotations_combined <- do.call(rbind, lapply(enriched_KEGG_annotations, function(ann) ann@result[1:10,]))
+enriched_KEGG_annotations_to_export <- enriched_KEGG_annotations_combined[,c('term', 'GeneRatio', 'BgRatio', 'pvalue', 'p.adjust', 'qvalue', 'cluster')]
+write.csv(enriched_KEGG_annotations_to_export, 'data/enriched_KEGG_annotations.csv')
 
 # function for parsing enrichment results, looking up genes in the DE results
 parse_ann <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
