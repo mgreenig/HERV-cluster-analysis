@@ -1,3 +1,11 @@
+if(!exists("cell_line")){
+  cell_line <- commandArgs(trailingOnly = TRUE)
+}
+
+if(cell_line != 'Calu3' & cell_line != 'A549'){
+  stop('Please input either Calu3 or A549 as the argument after the script name')
+}
+
 source('full_clustering.R')
 
 reqs <- c('RColorBrewer')
@@ -8,14 +16,6 @@ get_bioc_reqs(bioc_reqs)
 suppressPackageStartupMessages(library(clusterProfiler))
 suppressPackageStartupMessages(library(RColorBrewer))
 
-if(!exists("cell_line")){
-  cell_line <- commandArgs(trailingOnly = TRUE)
-}
-
-if(cell_line != 'Calu3' & cell_line != 'A549'){
-  stop('Please input either Calu3 or A549 as the argument after the script name')
-}
-
 # function for getting either enriched GO or KEGG terms
 get_enriched_terms <- function(gene_symbols, terms = c('GO', 'KEGG')){
   
@@ -24,7 +24,7 @@ get_enriched_terms <- function(gene_symbols, terms = c('GO', 'KEGG')){
   # Arguments
   # ------------
   # 
-  # gene_symbols : list of gene names (symbols) to be analysed for enrichment
+  # gene_symbols : vector of gene names (symbols) to be analysed for enrichment
   # terms : type of gene annotations to be used for enrichment analysis, either GO or KEGG
   # 
   # 
@@ -74,8 +74,9 @@ enriched_GO_annotations <- enriched_GO_annotations[!no_sig_GO_found_mask]
 
 # add new term column to each GO enrichment df
 enriched_GO_annotations <- lapply(enriched_GO_annotations, function(ann) {
-  ann@result$term <- paste(ann@result$ID, 
-                    ann@result$Description, sep = ': ')
+  # replace description for GO:0150115 - labelled NA
+  ann@result$Description <- ifelse(ann@result$ID == 'GO:0150115', 'cell-substrate junction organisation', ann@result$Description)
+  ann@result$term <- paste(ann@result$ID, ann@result$Description, sep = ': ')
   return(ann)
 })
 
@@ -105,8 +106,7 @@ enriched_KEGG_annotations <- enriched_KEGG_annotations[!no_sig_KEGG_found_mask]
 
 # add new term column to each KEGG enrichment df
 enriched_KEGG_annotations <- lapply(enriched_KEGG_annotations, function(ann) {
-  ann@result$term <- paste(ann@result$ID, 
-                           ann@result$Description, sep = ': ')
+  ann@result$term <- paste(ann@result$ID, ann@result$Description, sep = ': ')
   return(ann)
 })
 
@@ -163,7 +163,7 @@ for(term in unique(rownames(GO_enrichment_matrix))){
   logps <- sapply(clusters_to_plot, function(cluster){
     ann <- enriched_GO_annotations[[cluster]]@result
     if(term %in% ann$term){
-      if(ann[ann$term == term,'p.adjust'] < 0.05){
+      if(ann[ann$term == term,'pvalue'] < 0.05){
         logp <- -log10(ann[ann$term == term,'pvalue'])
         return(logp)
       } else {
@@ -182,9 +182,9 @@ enriched_GO_heatmap <- pheatmap::pheatmap(GO_enrichment_matrix, cluster_rows = F
                                           color = colorRampPalette(brewer.pal(n = 7, name = "Blues"))(100),
                                           cluster_cols = FALSE, angle_col = 0, 
                                           filename = paste('figures/enriched_GO_terms_', cell_line, '.png', sep = ''), 
-                                          width = 8, height = 5, cellwidth = 25, cellheight = 15)
+                                          width = 9, height = 6, cellwidth = 25, cellheight = 15)
 
-# get top n GO annotations for each cluster
+# get top n KEGG annotations for each cluster
 n <- 5 
 top_KEGG_annotations <- lapply(clusters_to_plot, function(cluster){
   cluster_annotations_KEGG <- enriched_KEGG_annotations[[cluster]]@result
@@ -205,7 +205,7 @@ for(term in unique(rownames(KEGG_enrichment_matrix))){
   logps <- sapply(clusters_to_plot, function(cluster){
     ann <- enriched_KEGG_annotations[[cluster]]@result
     if(term %in% ann$term){
-      if(ann[ann$term == term,'p.adjust'] < 0.05){
+      if(ann[ann$term == term,'pvalue'] < 0.05){
         logp <- -log10(ann[ann$term == term,'pvalue'])
         return(logp)
       } else {
@@ -225,3 +225,4 @@ enriched_KEGG_heatmap <- pheatmap::pheatmap(KEGG_enrichment_matrix, cluster_rows
                                             cluster_cols = FALSE, angle_col = 0, 
                                             filename = paste('figures/enriched_KEGG_terms_', cell_line, '.png', sep = ''), 
                                             width = 7, height = 5, cellwidth = 25, cellheight = 15)
+
