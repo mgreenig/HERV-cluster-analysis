@@ -122,39 +122,6 @@ enriched_KEGG_annotations_combined <- do.call(rbind, lapply(enriched_KEGG_annota
 enriched_KEGG_annotations_to_export <- enriched_KEGG_annotations_combined[,c('term', 'GeneRatio', 'BgRatio', 'pvalue', 'p.adjust', 'qvalue', 'cluster')]
 write.csv(enriched_KEGG_annotations_to_export, paste0('data/enriched_KEGG_annotations_', cell_line, '.csv'), row.names = F)
 
-# function for parsing enrichment results, looking up genes in the DE results
-parse_ann <- function(ann, DESeq_results, n_terms = 5, k_genes = 3){
-  
-  if(nrow(ann) == 0){
-    return(NA)
-  } else if(nrow(ann) < n_terms){
-    n_terms <- nrow(ann)
-  } 
-  
-  top_n <- ann[1:n_terms,]
-  
-  terms <- paste(rownames(top_n), top_n$Description, sep = ':')
-  
-  pvalues <- top_n$pvalue
-  
-  gene_sets <- strsplit(top_n$geneID, '/') %>% 
-    lapply(mapIds, column = 'SYMBOL', keytype = 'ENTREZID')
-  
-  top_k_genes <- sapply(gene_sets, function(genes){
-    res <- DESeq_results[genes,]
-    top_k <- rownames(res)[order(res$padj),][1:k_genes]
-    top_k_cat <- paste(top_k, collapse = ',')
-    return(top_k_cat)
-  })
-  
-  parsed_ann <- data.frame(term = terms, 
-                           p = pvalues,
-                           genes = top_k_genes)
-  
-  return(parsed_ann)
-  
-}
-
 # get top n GO annotations for each cluster
 n <- 5 
 top_GO_annotations <- lapply(clusters_to_plot, function(cluster){
