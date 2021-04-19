@@ -22,15 +22,15 @@ text_theme <- theme(plot.title = element_text(size = 18, hjust = 0.5), text = el
 all_sig_genes_infection_expr <- rbind(sig_human_genes_infection_expr, sig_retro_genes_infection_expr) %>%
   as.data.frame
 
+writeLines(paste('Running clustering on', nrow(all_sig_genes_infection_expr), 'human genes and retroelements...'))
+
 # get network adjacency matrix as 1 - correlation matrix squared
 all_sig_genes_dist <- factoextra::get_dist(all_sig_genes_infection_expr, method = 'pearson')
-
-print(paste('Running clustering on', nrow(all_sig_genes_infection_expr), 'human genes and retroelements...'))
 
 # cluster and use dynamic tree cut
 all_sig_genes_dendro <- hclust(all_sig_genes_dist, method = 'average')
 all_sig_genes_clusters <- dynamicTreeCut::cutreeDynamicTree(all_sig_genes_dendro, maxTreeHeight = 1.95, 
-                                                            deepSplit = TRUE, minModuleSize = ifelse(cell_line == 'A549', 200, 300))
+                                                            deepSplit = TRUE, minModuleSize =  if(cell_line == 'Calu3') 400 else 200)
 
 # add cluster to the dataframe
 all_sig_genes_infection$cluster <- all_sig_genes_clusters + 1
@@ -38,7 +38,7 @@ all_sig_genes_infection_expr$cluster <- all_sig_genes_clusters + 1
 all_sig_genes_infection_expr$gene_type <- ifelse(rownames(all_sig_genes_infection_expr) %in% rownames(sig_retro_genes_infection_expr),
                                                  'Retroelement', 'Human')
 
-print(paste('Found', length(unique(all_sig_genes_clusters)), 'clusters'))
+writeLines(paste('Found', length(unique(all_sig_genes_clusters)), 'clusters'))
 
 # get size of each cluster
 cluster_sizes <- all_sig_genes_infection_expr %>% 
@@ -54,7 +54,9 @@ cluster_size_plot <- ggplot(cluster_sizes, aes(x = cluster, y = n)) +
   theme_minimal() + text_theme
 
 if(!interactive()){
-  write.csv(all_sig_genes_infection_expr, paste('data/clustered_genes_', cell_line, '.csv', sep = ''), row.names = T)
+  # write genes and their clusters to CSV
+  write.csv(all_sig_genes_infection[,c('pvalue', 'padj', 'cluster')], paste('data/clustered_genes_', cell_line, '.csv', sep = ''), row.names = T)
+  # save cluster sizes figure
   ggsave(paste('figures/cluster_sizes_', cell_line, '.png', sep = ''), cluster_size_plot)
 }
 
@@ -154,7 +156,7 @@ cluster_hub_genes <- lapply(unique(all_sig_genes_infection_expr$cluster), get_hu
                             expr = all_sig_genes_infection_expr, distance_matrix = all_sig_genes_dist, n = 1)
 names(cluster_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
 
-cluster_hub_genes_all <- lapply(unique(all_sig_genes_infection_expr$cluster), function(clus, expr, distance_matrix, n){
+cluster_hub_genes_all <- lapply(unique(all_sig_genes_infection_expr$cluster), function(clus, expr, distance_matrix){
   get_hub_genes(cluster_number = clus, expr = expr, distance_matrix = distance_matrix, n = nrow(expr[expr$cluster == clus,]))
 }, expr = all_sig_genes_infection_expr, distance_matrix = all_sig_genes_dist)
 names(cluster_hub_genes_all) <- unique(all_sig_genes_infection_expr$cluster)
@@ -165,9 +167,9 @@ names(retro_hub_genes) <- unique(all_sig_genes_infection_expr$cluster)
 
 # plot module membership statistics for retro/human hub genes in 4 clusters
 if(cell_line == 'Calu3'){
-  clusters_to_plot <- c('5', '9', '11', '14')
+  clusters_to_plot <- c('3', '4', '10', '11')
 } else {
-  clusters_to_plot <- c('3', '5', '7', '8')
+  clusters_to_plot <- c('4', '6', '8', '14')
 }
 
 # get module membership statistics for each cluster to plot
@@ -182,8 +184,7 @@ module_membership_df <- lapply(clusters_to_plot, function(clus){
                    gene = c(cluster_hub_genes[[clus]],
                             retro_hub_genes[[clus]]))
   return(df)
-  }) %>%
-  do.call(rbind, .)
+  }) %>% do.call(rbind, .)
 module_membership_df$gene <- gsub('\\..*$', '', module_membership_df$gene)
 module_membership_df$cluster <- factor(module_membership_df$cluster, levels = clusters_to_plot)
 
