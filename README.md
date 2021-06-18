@@ -1,4 +1,4 @@
-# Network analysis of endogenous retrovirus expression in SARS-Cov2 infection
+# Clustering analysis of endogenous retrovirus expression
 
 This repository contains a pipeline that performs clustering on mixed human gene/transposable element RNA-sequencing data. 
 
