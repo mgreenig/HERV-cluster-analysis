@@ -16,6 +16,7 @@ req_args <- c('human_counts', 'te_counts', 'metadata', 'compare')
 
 checkArgs(parsed_args, req_args, file_args = req_args)
 
+# if output directory does not exist, create
 if('outdir' %in% names(parsed_args)){
   if(!dir.exists(parsed_args['outdir'])){
     dir.create(parsed_args['outdir'])

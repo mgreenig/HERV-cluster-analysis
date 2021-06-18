@@ -44,6 +44,13 @@ if('batch' %in% colnames(metadata)){
   metadata$batch <- as.factor(metadata$batch)
 }
 
+# if output directory does not exist, create
+if('outdir' %in% names(parsed_args)){
+  if(!dir.exists(parsed_args['outdir'])){
+    dir.create(parsed_args['outdir'])
+  }
+}
+
 # set ggplot theme for increased text size
 text_theme <- theme(plot.title = element_text(size = 18, hjust = 0.5), text = element_text(size = 14), plot.subtitle = element_text(size = 16, hjust = 0.5))
 

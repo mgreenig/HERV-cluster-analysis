@@ -27,6 +27,13 @@ checkArgs(parsed_args, req_args, file_args = c('clusterdata'))
 
 load(parsed_args['clusterdata'])
 
+# if output directory does not exist, create
+if('outdir' %in% names(parsed_args)){
+  if(!dir.exists(parsed_args['outdir'])){
+    dir.create(parsed_args['outdir'])
+  }
+}
+
 # get clusters to plot from parsed arguments
 clusters_to_plot <- stringr::str_trim(unlist(stringr::str_split(parsed_args['whichclusters'], ' ')))
 
