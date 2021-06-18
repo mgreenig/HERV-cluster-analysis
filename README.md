@@ -25,7 +25,7 @@ The pipeline consists of four scripts, each with a unique set of arguments. If s
 2. [`clustering.R`](clustering.R) - runs average-linkage hierachical clustering on the combined human/TE read count data 
     * `--counts` : filepath to the counts object counts.Rdata outputted by differentialexpression.R
     * `--diffexp` : filepath to the differential expression object DiffExp.Rdata outputted by differentialexpression.R
-    * `--geneset` : one of ('LRT', 'All') defining the gene set to use in clustering. LRT only clusters genes/TEs with adj p < 0.05 from the likelihood ratio test. Defaults to LRT.
+    * `--geneset` : one of (LRT, All) defining the gene set to use in clustering. LRT only clusters genes/TEs with adj p < 0.05 from the likelihood ratio test. Defaults to LRT.
     * `--minclustersize` : integer specifying the minimum cluster size (default is 200, can be omitted)
     * `--outdir` : directory to save data files (this argument can be omitted, in which case data files will be saved to the current directory)
 3. [`plotclusters.R`](plotclusters.R) - plots expression levels within each cluster
