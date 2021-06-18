@@ -49,7 +49,7 @@ Which would output the relevant data files to the `data/` directory. After runni
 Rscript clustering.R --counts data/counts.Rdata --diffexp data/DiffExp.Rdata --geneset LRT --minclustersize 200 --outdir data
 ```
 
-Then, to plot the clustering obtained from the clustering:
+Then, to plot the clusters:
 
 ```
 Rscript plotclusters.R --clusterdata data/ClusterData.Rdata --metadata data/Calu3_metadata.csv --outdir data
