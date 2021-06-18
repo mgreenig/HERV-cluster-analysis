@@ -1,4 +1,4 @@
-# Clustering analysis of endogenous retrovirus expression
+# Clustering analysis of transposable element expression
 
 This repository contains a pipeline that performs clustering on mixed human gene/transposable element RNA-sequencing data. 
 
