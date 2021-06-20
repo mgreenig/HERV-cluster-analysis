@@ -140,11 +140,10 @@ module_membership_df$gene <- gsub('\\..*$', '', module_membership_df$gene)
 module_membership_df$cluster <- factor(module_membership_df$cluster, levels = unique(clusterdata[['expr']]$cluster))
 
 # plot module memberships
-module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr, fill = type, label = gene)) + 
+module_membership_plot <- ggplot(module_membership_df, aes(x = cluster, y = corr, fill = type)) + 
   geom_col(position = position_dodge(0.6), width = 0.5, colour = 'black') +
   labs(x = '\nCluster', y = 'Module membership statistic\n', fill = 'Hub gene',
-       title = 'Module memberships of human and retroelement hub genes\n') +
-  geom_label(position = position_dodge(0.75), vjust = -0.25, size = 4, show.legend = FALSE) + 
+       title = 'Module memberships of human and retroelement hub genes\n') + 
   theme_minimal() + theme(plot.title = element_text(size = 20, face = 'bold', hjust = 0.5),
                           text = element_text(size = 18)) + ylim(c(0,1.05)) +
   scale_fill_manual(values = c('#00BFC4', '#F8766D'), labels = c('Human', 'Retroelement'))
