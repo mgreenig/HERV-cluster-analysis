@@ -78,7 +78,7 @@ if('batch' %in% colnames(metadata)){
 
 # import comparison sheet
 compare <- read.csv(parsed_args['compare'], sep = ',', header = TRUE)
-colnames(compare) <- str_to_lower(colnames(compare))
+colnames(compare) <- stringr::str_to_lower(colnames(compare))
 
 # check all entries of comparison file are in the metadata file
 if(!all(unlist(compare) %in% metadata$condition)){
@@ -190,7 +190,7 @@ plot_pca <- function(expr, title, coldata, condition_col = 'condition', batch_co
   PC1_PC2$batch <- coldata[[batch_col]]
   
   # get pct of total variance for first two PCs
-  PC1_PC2_variance_pcts <- PCA_results$sdev[1:2]**2 / sum(PCA_results$sdev**2) * 100
+  PC1_PC2_variance_pcts <- (PCA_results$sdev[1:2]**2 / sum(PCA_results$sdev**2)) * 100
   
   PC1_PC2_human_plot <- ggplot(PC1_PC2, aes(x = PC1, y = PC2, colour = condition, shape = batch)) + 
     geom_point(size = 3) + 
@@ -222,6 +222,8 @@ plot_dendrogram <- function(expr, title){
 if(!dir.exists('figures')){
   dir.create('figures')
 }
+
+writeLines('Generating sample PCA plots and dendrograms...\n')
 
 PCA_plot_human <- plot_pca(non_zero_human_counts_reg, title = 'Human genes', coldata = metadata)
 ggsave('figures/PCA_sample_plot_human.png', PCA_plot_human)
@@ -271,14 +273,14 @@ for(i in 1:nrow(compare)){
   
   # differential expression for human genes
   DE_human <- results(dds_human_wald, contrast = c('condition', compare[i, 1], compare[i, 2]))
-  DE_human_p_values <- make_pvalue_histogram(DE_human, title = comparison, save = TRUE)
-  volcano_human <- make_volcano_plot(DE_human, title = comparison, transcript_type = 'Human genes', save = TRUE)
+  DE_human_p_values <- make_pvalue_histogram(DE_human, title = paste0(comparison, '_human'), save = TRUE)
+  volcano_human <- make_volcano_plot(DE_human, title = paste0(comparison, '_human')transcript_type = 'Human genes', save = TRUE)
   human_DE_results[[comparison]] <- DE_human
   
   # differential expression for transposable elements
   DE_retro <- results(dds_retro_wald, contrast = c('condition', compare[i, 1], compare[i, 2]))
-  DE_retro_p_values <- make_pvalue_histogram(DE_retro, title = comparison, save = TRUE)
-  volcano_TE <- make_volcano_plot(DE_retro, title = comparison, transcript_type = 'Transposable elements', save = TRUE)
+  DE_retro_p_values <- make_pvalue_histogram(DE_retro, title = paste0(comparison, '_TE'), save = TRUE)
+  volcano_TE <- make_volcano_plot(DE_retro, title = paste0(comparison, '_TE')transcript_type = 'Transposable elements', save = TRUE)
   TE_DE_results[[comparison]] <- DE_retro
   
 }
