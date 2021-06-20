@@ -23,17 +23,17 @@ The pipeline consists of four scripts, each with a unique set of arguments. If s
     * `--compare` : filepath to comparison file (comma-separated), with two columns "A" and "B" for comparisons to be performed by DESeq2 (A = control, B = treatment). Values within each column A/B should be levels of "condition" in the metadata file.
     * `--outdir` : path to directory in which to save data files (this argument can be omitted, in which case data files will be saved to the current directory)
 2. [`clustering.R`](clustering.R) - runs average-linkage hierachical clustering on the combined human/TE read count data 
-    * `--counts` : filepath to the counts object counts.Rdata outputted by differentialexpression.R
-    * `--diffexp` : filepath to the differential expression object DiffExp.Rdata outputted by differentialexpression.R
+    * `--counts` : filepath to the counts object `counts.Rdata` outputted by [`differentialexpression.R`](differentialexpression.R)
+    * `--diffexp` : filepath to the differential expression object `DiffExp.Rdata` outputted by [`differentialexpression.R`](differentialexpression.R)
     * `--geneset` : one of (LRT, All) defining the gene set to use in clustering. LRT only clusters genes/TEs with adj p < 0.05 from the likelihood ratio test. Defaults to LRT.
     * `--minclustersize` : integer specifying the minimum cluster size (default is 200, can be omitted)
     * `--outdir` : directory to save data files (this argument can be omitted, in which case data files will be saved to the current directory)
 3. [`plotclusters.R`](plotclusters.R) - plots expression levels within each cluster
-    * `--clusterdata` : filepath to the cluster data object ClusterData.Rdata outputted by clustering.R
+    * `--clusterdata` : filepath to the cluster data object `ClusterData.Rdata` outputted by [`clustering.R`](clustering.R)
     * `--metadata` : filepath to metadata file (comma-separated), with three columns: "sample", "condition", and "batch" (batch can be omitted)
     * `--outdir` : directory to save data files (this argument can be omitted, in which case data files will be saved to the current directory)
 4. [`clusterenrichment.R`](clusterenrichment.R) - conducts enrichment analysis for a specified set of clusters, plots in heatmap
-    * `--clusterdata` : filepath to the cluster data object ClusterData.Rdata outputted by clustering.R
+    * `--clusterdata` : filepath to the cluster data object `ClusterData.Rdata` outputted by [`clustering.R`](clustering.R)
     * `--whichclusters` : space-separated values indicating which clusters enriched terms should be plotted for (e.g. --whichclusters 1 2 3 4 plots clusters 1, 2, 3, and 4), note that the user can include an arbitrary number of clusters here (not just 4)
     * `--outdir` : directory to save data files (this argument can be omitted, in which case data files will be saved to the current directory)
     
