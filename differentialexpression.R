@@ -46,7 +46,7 @@ non_zero_retro_counts <- retro_counts[!all_zero_retro_mask,]
 
 # import metadata
 metadata <- read.csv(parsed_args['metadata'], sep = ',', header = TRUE)
-colnames(metadata) <- str_to_lower(colnames(metadata))
+colnames(metadata) <- stringr::str_to_lower(colnames(metadata))
 
 if(!('condition' %in% colnames(metadata))){
   stop('Condition column not found in metadata file.')
@@ -69,6 +69,10 @@ if(!setequal(rownames(metadata), colnames(retro_counts))){
 }
 
 if('batch' %in% colnames(metadata)){
+  design_matrix <- model.matrix(~batch + condition, data = metadata)
+  if(qr(design_matrix)$rank < ncol(design_matrix)){
+    stop('Design matrix is not full rank: "batch" perfectly correlates with "condition". Remove batch column from the metadata and try again.')
+  }
   metadata$batch <- as.factor(metadata$batch)
 }
 
