@@ -12,6 +12,16 @@ by Blanco-Melo and colleagues. A human/HERV gene correlation network is construc
 
 This package uses R version 4.0. All required packages are installed automatically by running the scripts (if not already present).
 
+## Getting started
+
+First, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if you don't have it already. Open the command line, move to the directory where you want to store the pipeline code, and type:
+
+```
+git clone https://github.com/mgreenig/HERV-cluster-analysis
+```
+
+Which will pull all the code and store in a directory called `HERV-cluster-analysis`.
+
 ## Running the pipeline
 
 The pipeline consists of four scripts, each with a unique set of arguments. If starting an analysis, these should be run in order. The four scripts (and their command line arguments) are:
