@@ -69,8 +69,8 @@ if(!setequal(rownames(metadata), colnames(retro_counts))){
 }
 
 if('batch' %in% colnames(metadata)){
-  design_matrix <- model.matrix(~batch + condition, data = metadata)
-  if(qr(design_matrix)$rank < ncol(design_matrix)){
+  design_matrix <- model.matrix(~ batch + condition, data = metadata)
+  if( qr(design_matrix)$rank < ncol(design_matrix) ){
     stop('Design matrix is not full rank: "batch" perfectly correlates with "condition". Remove batch column from the metadata and try again.')
   }
   metadata$batch <- as.factor(metadata$batch)
@@ -274,13 +274,13 @@ for(i in 1:nrow(compare)){
   # differential expression for human genes
   DE_human <- results(dds_human_wald, contrast = c('condition', compare[i, 1], compare[i, 2]))
   DE_human_p_values <- make_pvalue_histogram(DE_human, title = paste0(comparison, '_human'), save = TRUE)
-  volcano_human <- make_volcano_plot(DE_human, title = paste0(comparison, '_human')transcript_type = 'Human genes', save = TRUE)
+  volcano_human <- make_volcano_plot(DE_human, title = paste0(comparison, '_human'), transcript_type = 'Human genes', save = TRUE)
   human_DE_results[[comparison]] <- DE_human
   
   # differential expression for transposable elements
   DE_retro <- results(dds_retro_wald, contrast = c('condition', compare[i, 1], compare[i, 2]))
   DE_retro_p_values <- make_pvalue_histogram(DE_retro, title = paste0(comparison, '_TE'), save = TRUE)
-  volcano_TE <- make_volcano_plot(DE_retro, title = paste0(comparison, '_TE')transcript_type = 'Transposable elements', save = TRUE)
+  volcano_TE <- make_volcano_plot(DE_retro, title = paste0(comparison, '_TE'), transcript_type = 'Transposable elements', save = TRUE)
   TE_DE_results[[comparison]] <- DE_retro
   
 }
